@@ -2,11 +2,12 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { AuthService } from '../../core/services/auth.service';
+import { TimeRecordComponent } from '../time-record/time-record.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [],
+    imports: [TimeRecordComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })

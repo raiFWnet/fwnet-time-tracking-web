@@ -1,0 +1,88 @@
+<section class="time-record-card" aria-labelledby="time-record-title">
+  <h2 id="time-record-title">Registrar ponto</h2>
+
+  <p class="description">
+    Registre sua jornada na ordem: entrada, saída para almoço,
+    retorno do almoço e saída da jornada.
+  </p>
+
+  <div class="record-actions" [attr.aria-busy]="submitting()">
+    @for (option of recordOptions; track option.type) {
+      <button
+        type="button"
+        class="record-button"
+        [disabled]="submitting() || loading() || !historyLoaded()"
+        (click)="register(option.type)"
+      >
+        {{ option.label }}
+      </button>
+    }
+  </div>
+
+  @if (submitting()) {
+    <p role="status">Registrando ponto...</p>
+  }
+
+  @if (successMessage()) {
+    <p class="message success" role="status">
+      {{ successMessage() }}
+    </p>
+  }
+
+  @if (errorMessage()) {
+    <p class="message error" role="alert">
+      {{ errorMessage() }}
+    </p>
+  }
+</section>
+
+<section class="time-record-card" aria-labelledby="history-title">
+  <div class="history-header">
+    <h2 id="history-title">Minhas marcações</h2>
+
+    <button
+      type="button"
+      class="refresh-button"
+      [disabled]="loading() || submitting()"
+      (click)="loadHistory()"
+    >
+      Atualizar histórico
+    </button>
+  </div>
+
+  @if (loading()) {
+    <p role="status">Carregando histórico...</p>
+  }
+
+  @if (records().length > 0) {
+    <div class="table-container">
+      <table>
+        <caption class="description">
+          Horários conforme registrados pelo servidor.
+        </caption>
+
+        <thead>
+          <tr>
+            <th scope="col">Jornada</th>
+            <th scope="col">Marcação</th>
+            <th scope="col">Data e horário</th>
+            <th scope="col">Origem</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (record of records(); track record.id) {
+            <tr>
+              <td>{{ formatWorkDate(record.workDate) }}</td>
+              <td>{{ getRecordLabel(record.recordType) }}</td>
+              <td>{{ formatRecordedAt(record.recordedAt) }}</td>
+              <td>{{ record.source }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else if (historyLoaded() && !loading()) {
+    <p class="description">Você ainda não possui marcações.</p>
+  }
+</section>
