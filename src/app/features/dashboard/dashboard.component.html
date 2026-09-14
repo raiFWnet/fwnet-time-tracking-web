@@ -20,11 +20,11 @@
 
       <h1 id="dashboard-title">Bem-vindo ao FWnet Time Tracking</h1>
 
-      <p class="welcome-description">
-        Este é o seu espaço para acompanhar sua jornada de trabalho.
-      </p>
-
       @if (isAdmin()) {
+        <p class="welcome-description">
+          Utilize as opções abaixo para administrar acessos e consultar marcações.
+        </p>
+
         <nav class="admin-actions" aria-label="Administração">
           <a class="admin-link" routerLink="/users/new">
             Criar acesso
@@ -34,9 +34,15 @@
             Consultar marcações
           </a>
         </nav>
+      } @else {
+        <p class="welcome-description">
+          Este é o seu espaço para acompanhar sua jornada de trabalho.
+        </p>
       }
     </section>
 
-    <app-time-record></app-time-record>
+    @if (!isAdmin()) {
+      <app-time-record></app-time-record>
+    }
   </main>
 </div>
