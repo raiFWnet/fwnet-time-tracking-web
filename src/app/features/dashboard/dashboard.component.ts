@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../core/services/auth.service';
 import { TimeRecordComponent } from '../time-record/time-record.component';
@@ -7,7 +7,7 @@ import { TimeRecordComponent } from '../time-record/time-record.component';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-    imports: [TimeRecordComponent],
+  imports: [TimeRecordComponent, RouterLink],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -17,6 +17,10 @@ export class DashboardComponent {
     private readonly authService: AuthService,
     private readonly router: Router
   ) {}
+
+  isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
 
   logout(): void {
     this.authService.logout();

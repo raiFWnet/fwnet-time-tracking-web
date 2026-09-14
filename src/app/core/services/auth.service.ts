@@ -29,6 +29,49 @@ export class AuthService {
     return this.tokenStorage.getToken() !== null;
   }
 
+  isAdmin(): boolean {
+    const token = this.tokenStorage.getToken();
+
+    if (!token) {
+      return false;
+    }
+
+    try {
+      const parts = token.split('.');
+
+      if (parts.length !== 3) {
+        return false;
+      }
+
+      const base64 = parts[1]
+        .replace(/-/g, '+')
+        .replace(/_/g, '/');
+
+      const paddedBase64 = base64.padEnd(
+        Math.ceil(base64.length / 4) * 4,
+        '='
+      );
+
+      const payload: unknown = JSON.parse(atob(paddedBase64));
+
+      if (
+        typeof payload !== 'object' ||
+        payload === null ||
+        !('role' in payload) ||
+        !('exp' in payload)
+      ) {
+        return false;
+      }
+
+      return payload.role === 'ADMIN'
+        && typeof payload.exp === 'number'
+        && Number.isFinite(payload.exp)
+        && payload.exp * 1000 > Date.now();
+    } catch {
+      return false;
+    }
+  }
+
   logout(): void {
     this.tokenStorage.clearToken();
   }

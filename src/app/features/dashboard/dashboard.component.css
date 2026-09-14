@@ -116,3 +116,32 @@ h1 {
     font-size: 24px;
   }
 }
+.admin-actions {
+  margin-top: 20px;
+}
+
+.admin-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 12px 20px;
+  border-radius: 8px;
+  background: #237244;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+}
+
+.admin-link:hover {
+  background: #195a34;
+}
+
+.admin-link:focus-visible {
+  outline: 3px solid #399460;
+  outline-offset: 3px;
+}

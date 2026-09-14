@@ -23,6 +23,14 @@
       <p class="welcome-description">
         Este é o seu espaço para acompanhar sua jornada de trabalho.
       </p>
+
+      @if (isAdmin()) {
+        <nav class="admin-actions" aria-label="Administração">
+          <a class="admin-link" routerLink="/users/new">
+            Criar acesso
+          </a>
+        </nav>
+      }
     </section>
 
     <app-time-record></app-time-record>
