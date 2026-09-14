@@ -22,6 +22,10 @@ export class DashboardComponent {
     return this.authService.isAdmin();
   }
 
+  getAuthenticatedUserName(): string {
+    return this.authService.getAuthenticatedUserName();
+  }
+
   logout(): void {
     this.authService.logout();
     void this.router.navigate(['/login'], { replaceUrl: true });

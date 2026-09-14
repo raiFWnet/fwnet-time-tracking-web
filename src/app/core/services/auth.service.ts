@@ -21,12 +21,19 @@ export class AuthService {
 
   login(request: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(this.loginUrl, request).pipe(
-      tap(response => this.tokenStorage.saveToken(response.token))
+      tap(response => {
+        this.tokenStorage.saveToken(response.token);
+        this.tokenStorage.saveFullName(response.fullName);
+      })
     );
   }
 
   isAuthenticated(): boolean {
     return this.tokenStorage.getToken() !== null;
+  }
+
+  getAuthenticatedUserName(): string {
+    return this.tokenStorage.getFullName() ?? '';
   }
 
   isAdmin(): boolean {
@@ -73,6 +80,6 @@ export class AuthService {
   }
 
   logout(): void {
-    this.tokenStorage.clearToken();
+    this.tokenStorage.clearSession();
   }
 }
