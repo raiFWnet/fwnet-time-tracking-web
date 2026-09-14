@@ -5,6 +5,7 @@ import { adminGuard } from './core/guards/admin.guard';
 import { LoginComponent } from './features/auth/login.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { UserCreateComponent } from './features/users/user-create.component';
+import { AdminTimeRecordComponent } from './features/time-record/admin-time-record.component';
 
 export const routes: Routes = [
   {
@@ -14,6 +15,11 @@ export const routes: Routes = [
   {
     path: 'users/new',
     component: UserCreateComponent,
+    canActivate: [authGuard, adminGuard]
+  },
+  {
+    path: 'time-records/admin',
+    component: AdminTimeRecordComponent,
     canActivate: [authGuard, adminGuard]
   },
   {
