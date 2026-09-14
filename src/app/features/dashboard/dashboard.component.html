@@ -14,13 +14,19 @@
   </div>
 </div>
 
-    <button
-      class="logout-button"
-      type="button"
-      (click)="logout()"
-    >
-      Sair
-    </button>
+    <div class="header-actions">
+      <span class="authenticated-user">
+        {{ getAuthenticatedUserName() }}
+      </span>
+
+      <button
+        class="logout-button"
+        type="button"
+        (click)="logout()"
+      >
+        Sair
+      </button>
+    </div>
   </header>
 
   <main class="dashboard-content">

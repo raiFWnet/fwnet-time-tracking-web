@@ -53,7 +53,18 @@
   color: #6b7280;
   font-size: 14px;
 }
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
 
+.authenticated-user {
+  color: #374151;
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+}
 .logout-button {
   padding: 10px 22px;
   border: 1px solid #008f4d;
@@ -115,6 +126,15 @@ h1 {
 @media (max-width: 600px) {
   .dashboard-header {
     padding: 16px 20px;
+  }
+    .header-actions {
+    gap: 12px;
+  }
+
+  .authenticated-user {
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .dashboard-content {
