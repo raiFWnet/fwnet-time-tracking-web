@@ -16,3 +16,9 @@ export interface TimeRecordResponse {
   source: string;
   createdAt: string;
 }
+
+export interface AdminTimeRecordResponse extends TimeRecordResponse {
+  userId: string;
+  userFullName: string;
+  userEmail: string;
+}

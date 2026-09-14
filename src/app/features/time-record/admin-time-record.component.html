@@ -1,0 +1,105 @@
+<div class="admin-page">
+  <header class="page-header">
+    <div class="brand">
+      <span class="brand-name">FWnet</span>
+      <span class="brand-description">Time Tracking</span>
+    </div>
+
+    <a class="back-link" routerLink="/">
+      Voltar ao painel
+    </a>
+  </header>
+
+  <main class="page-content">
+    <section
+      class="history-card"
+      aria-labelledby="admin-history-title"
+      [attr.aria-busy]="loading()"
+    >
+      <p class="section-label">ADMINISTRAÇÃO</p>
+
+      <div class="history-heading">
+        <div>
+          <h1 id="admin-history-title">Marcações dos usuários</h1>
+
+          <p class="description">
+            Consulte as marcações de todos os usuários, da mais recente
+            para a mais antiga.
+          </p>
+        </div>
+
+        <button
+          class="refresh-button"
+          type="button"
+          [disabled]="loading()"
+          (click)="loadHistory()"
+        >
+          {{ loading() ? 'Carregando...' : 'Atualizar marcações' }}
+        </button>
+      </div>
+
+      @if (errorMessage()) {
+        <p class="error-message" role="alert">
+          {{ errorMessage() }}
+        </p>
+      }
+
+      @if (loading()) {
+        <p class="status-message" role="status">
+          Carregando marcações...
+        </p>
+      } @else if (historyLoaded()) {
+        @if (records().length === 0) {
+          <p class="status-message" role="status">
+            Nenhuma marcação registrada.
+          </p>
+        } @else {
+          <p class="record-count" role="status">
+            Total de marcações: {{ records().length }}
+          </p>
+
+          <div
+            class="table-container"
+            role="region"
+            aria-label="Tabela de marcações dos usuários"
+            tabindex="0"
+          >
+            <table>
+              <caption>
+                Histórico administrativo de marcações
+              </caption>
+
+              <thead>
+                <tr>
+                  <th scope="col">Usuário</th>
+                  <th scope="col">E-mail</th>
+                  <th scope="col">Data da jornada</th>
+                  <th scope="col">Marcação</th>
+                  <th scope="col">Data e horário registrados</th>
+                  <th scope="col">Origem</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                @for (record of records(); track record.id) {
+                  <tr>
+                    <td class="user-name">{{ record.userFullName }}</td>
+                    <td class="user-email">{{ record.userEmail }}</td>
+                    <td class="date-cell">
+                      {{ formatWorkDate(record.workDate) }}
+                    </td>
+                    <td>{{ getRecordLabel(record.recordType) }}</td>
+                    <td class="date-cell">
+                      {{ formatRecordedAt(record.recordedAt) }}
+                    </td>
+                    <td>{{ record.source }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+    </section>
+  </main>
+</div>
