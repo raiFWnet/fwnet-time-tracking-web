@@ -1,20 +1,25 @@
 <div class="admin-page">
   <header class="page-header">
-<div class="brand">
-  <img
-    class="brand-logo"
-    src="/favicon.ico?v=2"
-    alt=""
-    aria-hidden="true"
-  >
+    <div class="brand">
+      <img
+        class="brand-logo"
+        src="/favicon.ico?v=2"
+        alt=""
+        aria-hidden="true"
+      >
 
-  <div class="brand-text">
-    <span class="brand-name">FWnet</span>
-    <span class="brand-description">Time Tracking</span>
-  </div>
-</div>
+      <div class="brand-text">
+        <span class="brand-name">FWnet</span>
+        <span class="brand-description">
+          Time Tracking
+        </span>
+      </div>
+    </div>
 
-    <a class="back-link" routerLink="/">
+    <a
+      class="back-link"
+      routerLink="/"
+    >
       Voltar ao painel
     </a>
   </header>
@@ -25,15 +30,19 @@
       aria-labelledby="admin-history-title"
       [attr.aria-busy]="loading()"
     >
-      <p class="section-label">ADMINISTRAÇÃO</p>
+      <p class="section-label">
+        ADMINISTRAÇÃO
+      </p>
 
       <div class="history-heading">
         <div>
-          <h1 id="admin-history-title">Marcações dos usuários</h1>
+          <h1 id="admin-history-title">
+            Marcações dos usuários
+          </h1>
 
           <p class="description">
-            Consulte as marcações de todos os usuários, da mais recente
-            para a mais antiga.
+            Consulte as marcações dos usuários e filtre
+            por analista e data da jornada.
           </p>
         </div>
 
@@ -43,28 +52,128 @@
           [disabled]="loading()"
           (click)="loadHistory()"
         >
-          {{ loading() ? 'Carregando...' : 'Atualizar marcações' }}
+          {{
+            loading()
+              ? 'Carregando...'
+              : 'Atualizar marcações'
+          }}
         </button>
       </div>
 
+<form
+  class="filter-form"
+  (submit)="$event.preventDefault(); applyFilters()"
+>
+        <div class="filter-field">
+          <label for="analyst-filter">
+            Analista
+          </label>
+
+          <select
+            id="analyst-filter"
+            [formControl]="analystFilter"
+          >
+            <option value="">
+              Todos os analistas
+            </option>
+
+            @for (
+              analyst of analystOptions();
+              track analyst.email
+            ) {
+              <option [value]="analyst.email">
+                {{ analyst.fullName }}
+                — {{ analyst.email }}
+              </option>
+            }
+          </select>
+        </div>
+
+        <div class="filter-field">
+          <label for="work-date-filter">
+            Data da jornada
+          </label>
+
+          <input
+            id="work-date-filter"
+            type="date"
+            [formControl]="workDateFilter"
+          >
+        </div>
+
+        <div class="filter-actions">
+          <button
+            class="filter-button"
+            type="submit"
+            [disabled]="loading()"
+          >
+            Consultar
+          </button>
+
+          <button
+            class="clear-filter-button"
+            type="button"
+            [disabled]="
+              loading() ||
+              (
+                !analystFilter.value &&
+                !workDateFilter.value &&
+                !hasActiveFilters()
+              )
+            "
+            (click)="clearFilters()"
+          >
+            Limpar filtros
+          </button>
+        </div>
+      </form>
+
       @if (errorMessage()) {
-        <p class="error-message" role="alert">
+        <p
+          class="error-message"
+          role="alert"
+        >
           {{ errorMessage() }}
         </p>
       }
 
       @if (loading()) {
-        <p class="status-message" role="status">
+        <p
+          class="status-message"
+          role="status"
+        >
           Carregando marcações...
         </p>
       } @else if (historyLoaded()) {
         @if (records().length === 0) {
-          <p class="status-message" role="status">
+          <p
+            class="status-message"
+            role="status"
+          >
             Nenhuma marcação registrada.
           </p>
+        } @else if (filteredRecords().length === 0) {
+          <p
+            class="status-message"
+            role="status"
+          >
+            Nenhuma marcação encontrada para os filtros selecionados.
+          </p>
         } @else {
-          <p class="record-count" role="status">
-            Total de marcações: {{ records().length }}
+          <p
+            class="record-count"
+            role="status"
+          >
+            @if (hasActiveFilters()) {
+              Exibindo
+              {{ filteredRecords().length }}
+              de
+              {{ records().length }}
+              marcações.
+            } @else {
+              Total de marcações:
+              {{ records().length }}
+            }
           </p>
 
           <div
@@ -80,28 +189,68 @@
 
               <thead>
                 <tr>
-                  <th scope="col">Usuário</th>
-                  <th scope="col">E-mail</th>
-                  <th scope="col">Data da jornada</th>
-                  <th scope="col">Marcação</th>
-                  <th scope="col">Data e horário registrados</th>
-                  <th scope="col">Origem</th>
+                  <th scope="col">
+                    Usuário
+                  </th>
+                  <th scope="col">
+                    E-mail
+                  </th>
+                  <th scope="col">
+                    Data da jornada
+                  </th>
+                  <th scope="col">
+                    Marcação
+                  </th>
+                  <th scope="col">
+                    Data e horário registrados
+                  </th>
+                  <th scope="col">
+                    Origem
+                  </th>
                 </tr>
               </thead>
 
               <tbody>
-                @for (record of records(); track record.id) {
+                @for (
+                  record of filteredRecords();
+                  track record.id
+                ) {
                   <tr>
-                    <td class="user-name">{{ record.userFullName }}</td>
-                    <td class="user-email">{{ record.userEmail }}</td>
-                    <td class="date-cell">
-                      {{ formatWorkDate(record.workDate) }}
+                    <td class="user-name">
+                      {{ record.userFullName }}
                     </td>
-                    <td>{{ getRecordLabel(record.recordType) }}</td>
-                    <td class="date-cell">
-                      {{ formatRecordedAt(record.recordedAt) }}
+
+                    <td class="user-email">
+                      {{ record.userEmail }}
                     </td>
-                    <td>{{ record.source }}</td>
+
+                    <td class="date-cell">
+                      {{
+                        formatWorkDate(
+                          record.workDate
+                        )
+                      }}
+                    </td>
+
+                    <td>
+                      {{
+                        getRecordLabel(
+                          record.recordType
+                        )
+                      }}
+                    </td>
+
+                    <td class="date-cell">
+                      {{
+                        formatRecordedAt(
+                          record.recordedAt
+                        )
+                      }}
+                    </td>
+
+                    <td>
+                      {{ record.source }}
+                    </td>
                   </tr>
                 }
               </tbody>
