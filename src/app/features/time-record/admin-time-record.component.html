@@ -60,10 +60,10 @@
         </button>
       </div>
 
-<form
-  class="filter-form"
-  (submit)="$event.preventDefault(); applyFilters()"
->
+      <form
+        class="filter-form"
+        (submit)="$event.preventDefault(); applyFilters()"
+      >
         <div class="filter-field">
           <label for="analyst-filter">
             Analista
@@ -137,6 +137,15 @@
         </p>
       }
 
+      @if (correctionSuccessMessage()) {
+        <p
+          class="success-message"
+          role="status"
+        >
+          {{ correctionSuccessMessage() }}
+        </p>
+      }
+
       @if (loading()) {
         <p
           class="status-message"
@@ -207,6 +216,9 @@
                   <th scope="col">
                     Origem
                   </th>
+                  <th scope="col">
+                    Ações
+                  </th>
                 </tr>
               </thead>
 
@@ -251,6 +263,17 @@
                     <td>
                       {{ record.source }}
                     </td>
+
+                    <td class="action-cell">
+                      <button
+                        class="correction-button"
+                        type="button"
+                        [disabled]="correcting()"
+                        (click)="openCorrection(record)"
+                      >
+                        Corrigir
+                      </button>
+                    </td>
                   </tr>
                 }
               </tbody>
@@ -260,4 +283,219 @@
       }
     </section>
   </main>
+
+  @if (selectedRecord(); as record) {
+    <div class="modal-backdrop">
+      <section
+        class="correction-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="correction-modal-title"
+      >
+        <div class="modal-header">
+          <div>
+            <p class="section-label">
+              CORREÇÃO ADMINISTRATIVA
+            </p>
+
+            <h2 id="correction-modal-title">
+              Corrigir marcação
+            </h2>
+          </div>
+
+          <button
+            class="modal-close-button"
+            type="button"
+            aria-label="Fechar correção"
+            [disabled]="correcting()"
+            (click)="closeCorrection()"
+          >
+            ×
+          </button>
+        </div>
+
+        <div class="correction-record-info">
+          <div>
+            <span class="info-label">
+              Analista
+            </span>
+
+            <strong>
+              {{ record.userFullName }}
+            </strong>
+          </div>
+
+          <div>
+            <span class="info-label">
+              E-mail
+            </span>
+
+            <span>
+              {{ record.userEmail }}
+            </span>
+          </div>
+
+          <div>
+            <span class="info-label">
+              Tipo da marcação
+            </span>
+
+            <strong>
+              {{ getRecordLabel(record.recordType) }}
+            </strong>
+          </div>
+        </div>
+
+        <p class="correction-notice">
+          O analista e o tipo da marcação não podem ser
+          alterados.
+        </p>
+
+        <form
+          class="correction-form"
+          (submit)="$event.preventDefault(); submitCorrection()"
+        >
+          <div class="correction-field">
+            <label for="correction-work-date">
+              Data da jornada
+            </label>
+
+            <input
+              id="correction-work-date"
+              type="date"
+              [formControl]="correctionWorkDate"
+            >
+
+            @if (
+              correctionWorkDate.touched &&
+              correctionWorkDate.hasError('required')
+            ) {
+              <p class="field-error">
+                Informe a data da jornada.
+              </p>
+            }
+          </div>
+
+          <div class="correction-field">
+            <label for="correction-recorded-date">
+              Data do registro
+            </label>
+
+            <input
+              id="correction-recorded-date"
+              type="date"
+              [formControl]="correctionRecordedDate"
+            >
+
+            @if (
+              correctionRecordedDate.touched &&
+              correctionRecordedDate.hasError('required')
+            ) {
+              <p class="field-error">
+                Informe a data do registro.
+              </p>
+            }
+          </div>
+
+          <div class="correction-field">
+            <label for="correction-recorded-time">
+              Horário registrado
+            </label>
+
+            <input
+              id="correction-recorded-time"
+              type="time"
+              step="1"
+              [formControl]="correctionRecordedTime"
+            >
+
+            @if (
+              correctionRecordedTime.touched &&
+              correctionRecordedTime.hasError('required')
+            ) {
+              <p class="field-error">
+                Informe o horário da marcação.
+              </p>
+            }
+          </div>
+
+          <div class="correction-field">
+            <label for="correction-reason">
+              Motivo da correção
+            </label>
+
+            <textarea
+              id="correction-reason"
+              rows="4"
+              maxlength="500"
+              [formControl]="correctionReason"
+              placeholder="Informe o motivo da correção"
+            ></textarea>
+
+            <div class="reason-footer">
+              <div>
+                @if (
+                  correctionReason.touched &&
+                  (
+                    correctionReason.hasError('required') ||
+                    correctionReason.hasError('pattern')
+                  )
+                ) {
+                  <p class="field-error">
+                    Informe o motivo da correção.
+                  </p>
+                }
+
+                @if (
+                  correctionReason.touched &&
+                  correctionReason.hasError('maxlength')
+                ) {
+                  <p class="field-error">
+                    O motivo deve ter no máximo
+                    500 caracteres.
+                  </p>
+                }
+              </div>
+
+              <span class="character-count">
+                {{ correctionReason.value.length }}/500
+              </span>
+            </div>
+          </div>
+
+          @if (correctionErrorMessage()) {
+            <p
+              class="error-message correction-error"
+              role="alert"
+            >
+              {{ correctionErrorMessage() }}
+            </p>
+          }
+
+          <div class="modal-actions">
+            <button
+              class="cancel-correction-button"
+              type="button"
+              [disabled]="correcting()"
+              (click)="closeCorrection()"
+            >
+              Cancelar
+            </button>
+
+            <button
+              class="save-correction-button"
+              type="submit"
+              [disabled]="correcting()"
+            >
+              {{
+                correcting()
+                  ? 'Salvando...'
+                  : 'Salvar correção'
+              }}
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  }
 </div>

@@ -8,6 +8,12 @@ export interface CreateTimeRecordRequest {
   recordType: TimeRecordType;
 }
 
+export interface CorrectTimeRecordRequest {
+  workDate: string;
+  recordedAt: string;
+  reason: string;
+}
+
 export interface TimeRecordResponse {
   id: string;
   workDate: string;

@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   AdminTimeRecordResponse,
+  CorrectTimeRecordRequest,
   CreateTimeRecordRequest,
   TimeRecordResponse
 } from './time-record.model';
@@ -28,6 +29,16 @@ export class TimeRecordService {
   getAdminHistory(): Observable<AdminTimeRecordResponse[]> {
     return this.http.get<AdminTimeRecordResponse[]>(
       `${this.apiUrl}/admin`
+    );
+  }
+
+  correctAdminTimeRecord(
+    id: string,
+    request: CorrectTimeRecordRequest
+  ): Observable<AdminTimeRecordResponse> {
+    return this.http.patch<AdminTimeRecordResponse>(
+      `${this.apiUrl}/admin/${id}`,
+      request
     );
   }
 }
