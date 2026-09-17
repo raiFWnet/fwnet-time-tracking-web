@@ -1,0 +1,254 @@
+<div class="users-page">
+  <header class="users-header">
+    <div class="brand">
+      <img
+        class="brand-logo"
+        src="/favicon.ico?v=2"
+        alt=""
+        aria-hidden="true"
+      >
+
+      <div class="brand-text">
+        <span class="brand-name">FWnet</span>
+        <span class="brand-description">Time Tracking</span>
+      </div>
+    </div>
+
+    <a class="back-link" routerLink="/">Voltar ao painel</a>
+  </header>
+
+  <main class="users-content">
+    <section class="user-card">
+      <p class="section-label">ADMINISTRAÇÃO</p>
+
+      <h1>Gerenciar acessos</h1>
+
+      <p class="description">
+        Consulte os usuários cadastrados e selecione um acesso para editar.
+      </p>
+
+      @if (successMessage() && !selectedUser()) {
+        <div class="message success-message" role="status">
+          {{ successMessage() }}
+        </div>
+      }
+
+      @if (errorMessage() && !selectedUser()) {
+        <div class="message error-message" role="alert">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <div class="list-header">
+        <h2>Usuários cadastrados</h2>
+
+        <button
+          class="secondary-button"
+          type="button"
+          (click)="loadUsers()"
+          [disabled]="isLoading()"
+        >
+          {{ isLoading() ? 'Atualizando...' : 'Atualizar lista' }}
+        </button>
+      </div>
+
+      @if (isLoading() && users().length === 0) {
+        <p class="empty-state">Carregando usuários...</p>
+      } @else if (users().length === 0) {
+        <p class="empty-state">Nenhum usuário encontrado.</p>
+      } @else {
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Perfil</th>
+                <th>Status</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (user of users(); track user.id) {
+                <tr>
+                  <td>{{ user.fullName }}</td>
+                  <td>{{ user.email }}</td>
+                  <td>{{ getRoleLabel(user.role) }}</td>
+
+                  <td>
+                    <span
+                      class="status-badge"
+                      [class.inactive]="!user.active"
+                    >
+                      {{ user.active ? 'Ativo' : 'Inativo' }}
+                    </span>
+                  </td>
+
+                  <td>
+                    <button
+                      class="edit-button"
+                      type="button"
+                      (click)="selectUser(user)"
+                    >
+                      Editar
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  </main>
+
+  @if (selectedUser(); as user) {
+    <div class="modal-backdrop">
+      <section
+        class="user-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="user-edit-title"
+      >
+        <div class="modal-header">
+          <div>
+            <p class="section-label">EDIÇÃO DE ACESSO</p>
+
+            <h2 id="user-edit-title">
+              {{ user.fullName }}
+            </h2>
+          </div>
+
+          <button
+            class="modal-close-button"
+            type="button"
+            aria-label="Fechar edição"
+            (click)="cancelEdit()"
+            [disabled]="isSaving()"
+          >
+            ×
+          </button>
+        </div>
+
+        <p class="description modal-description">
+          Altere os dados necessários. Deixe a senha vazia para manter
+          a senha atual.
+        </p>
+
+        @if (errorMessage()) {
+          <div class="message error-message" role="alert">
+            {{ errorMessage() }}
+          </div>
+        }
+
+        <form
+          [formGroup]="form"
+          (ngSubmit)="submit()"
+          [attr.aria-busy]="isSaving()"
+          novalidate
+        >
+          <div class="form-field">
+            <label for="fullName">Nome completo</label>
+
+            <input
+              id="fullName"
+              type="text"
+              formControlName="fullName"
+              maxlength="150"
+              autocomplete="off"
+              required
+            >
+
+            @if (
+              form.controls.fullName.touched
+              && form.controls.fullName.invalid
+            ) {
+              <small class="field-error">
+                Informe um nome válido com até 150 caracteres.
+              </small>
+            }
+          </div>
+
+          <div class="form-field">
+            <label for="email">E-mail</label>
+
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              maxlength="180"
+              autocomplete="off"
+              required
+            >
+
+            @if (
+              form.controls.email.touched
+              && form.controls.email.invalid
+            ) {
+              <small class="field-error">
+                Informe um e-mail válido com até 180 caracteres.
+              </small>
+            }
+          </div>
+
+          <div class="form-field">
+            <label for="password">Nova senha</label>
+
+            <input
+              id="password"
+              type="password"
+              formControlName="password"
+              autocomplete="new-password"
+            >
+
+            <small class="field-help">
+              Deixe em branco para manter a senha atual.
+            </small>
+
+            @if (
+              form.controls.password.touched
+              && form.controls.password.invalid
+            ) {
+              <small class="field-error">
+                A senha não pode conter apenas espaços.
+              </small>
+            }
+          </div>
+
+          <div class="form-field">
+            <label for="role">Perfil de acesso</label>
+
+            <select
+              id="role"
+              formControlName="role"
+              required
+            >
+              <option value="ANALYST">Analista</option>
+              <option value="ADMIN">Administrador</option>
+            </select>
+          </div>
+
+          <div class="modal-actions">
+            <button
+              class="cancel-button"
+              type="button"
+              (click)="cancelEdit()"
+              [disabled]="isSaving()"
+            >
+              Cancelar
+            </button>
+
+            <button
+              class="submit-button"
+              type="submit"
+              [disabled]="isSaving()"
+            >
+              {{ isSaving() ? 'Salvando...' : 'Salvar alterações' }}
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  }
+</div>

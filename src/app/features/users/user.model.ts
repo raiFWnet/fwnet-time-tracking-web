@@ -7,6 +7,13 @@ export interface CreateUserRequest {
   role: UserRole;
 }
 
+export interface UpdateUserRequest {
+  fullName: string;
+  email: string;
+  password: string;
+  role: UserRole;
+}
+
 export interface UserResponse {
   id: string;
   fullName: string;
