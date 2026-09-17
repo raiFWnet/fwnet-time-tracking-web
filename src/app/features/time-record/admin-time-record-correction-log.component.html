@@ -1,0 +1,469 @@
+<div class="admin-page">
+  <header class="page-header">
+    <div class="brand">
+      <img
+        class="brand-logo"
+        src="/favicon.ico?v=2"
+        alt=""
+        aria-hidden="true"
+      >
+
+      <div class="brand-text">
+        <span class="brand-name">FWnet</span>
+        <span class="brand-description">
+          Time Tracking
+        </span>
+      </div>
+    </div>
+
+    <a
+      class="back-link"
+      routerLink="/"
+    >
+      Voltar ao painel
+    </a>
+  </header>
+
+  <main class="page-content">
+    <section
+      class="logs-card"
+      aria-labelledby="correction-logs-title"
+      [attr.aria-busy]="loading()"
+    >
+      <p class="section-label">
+        AUDITORIA
+      </p>
+
+      <div class="logs-heading">
+        <div>
+          <h1 id="correction-logs-title">
+            Logs de correções
+          </h1>
+
+          <p class="description">
+            Consulte as correções realizadas nas marcações
+            dos analistas.
+          </p>
+        </div>
+
+        <button
+          class="refresh-button"
+          type="button"
+          [disabled]="loading()"
+          (click)="loadLogs()"
+        >
+          {{
+            loading()
+              ? 'Carregando...'
+              : 'Atualizar logs'
+          }}
+        </button>
+      </div>
+
+      <form
+        class="filter-form"
+        (submit)="$event.preventDefault(); applyFilters()"
+      >
+        <div class="filter-field">
+          <label for="analyst-filter">
+            Analista
+          </label>
+
+          <select
+            id="analyst-filter"
+            [formControl]="analystFilter"
+          >
+            <option value="">
+              Todos os analistas
+            </option>
+
+            @for (
+              analyst of analystOptions();
+              track analyst.email
+            ) {
+              <option [value]="analyst.email">
+                {{ analyst.fullName }}
+                — {{ analyst.email }}
+              </option>
+            }
+          </select>
+        </div>
+
+        <div class="filter-field">
+          <label for="date-filter">
+            Data da jornada
+          </label>
+
+          <input
+            id="date-filter"
+            type="date"
+            [formControl]="dateFilter"
+          >
+        </div>
+
+        <div class="filter-actions">
+          <button
+            class="filter-button"
+            type="submit"
+            [disabled]="loading()"
+          >
+            Consultar
+          </button>
+
+          <button
+            class="clear-filter-button"
+            type="button"
+            [disabled]="
+              loading() ||
+              (
+                !analystFilter.value &&
+                !dateFilter.value &&
+                !hasActiveFilters()
+              )
+            "
+            (click)="clearFilters()"
+          >
+            Limpar filtros
+          </button>
+        </div>
+      </form>
+
+      @if (errorMessage()) {
+        <p
+          class="error-message"
+          role="alert"
+        >
+          {{ errorMessage() }}
+        </p>
+      }
+
+      @if (loading()) {
+        <p
+          class="status-message"
+          role="status"
+        >
+          Carregando logs...
+        </p>
+      } @else if (logsLoaded()) {
+        @if (logs().length === 0) {
+          <p
+            class="status-message"
+            role="status"
+          >
+            Nenhuma correção registrada.
+          </p>
+        } @else if (filteredLogs().length === 0) {
+          <p
+            class="status-message"
+            role="status"
+          >
+            Nenhum log encontrado para os filtros selecionados.
+          </p>
+        } @else {
+          <p
+            class="record-count"
+            role="status"
+          >
+            @if (hasActiveFilters()) {
+              Exibindo
+              {{ filteredLogs().length }}
+              de
+              {{ logs().length }}
+              correções.
+            } @else {
+              Total de correções:
+              {{ logs().length }}
+            }
+          </p>
+
+          <div
+            class="table-container"
+            role="region"
+            aria-label="Tabela de logs de correções"
+            tabindex="0"
+          >
+            <table>
+              <caption>
+                Histórico de correções administrativas
+              </caption>
+
+              <thead>
+                <tr>
+                  <th scope="col">
+                    Analista
+                  </th>
+
+                  <th scope="col">
+                    Marcação
+                  </th>
+
+                  <th scope="col">
+                    Data da jornada
+                  </th>
+
+                  <th scope="col">
+                    Corrigido por
+                  </th>
+
+                  <th scope="col">
+                    Data da correção
+                  </th>
+
+                  <th scope="col">
+                    Detalhes
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                @for (
+                  log of filteredLogs();
+                  track log.id
+                ) {
+                  <tr
+                    class="log-row"
+                    tabindex="0"
+                    (click)="openDetails(log)"
+                    (keydown.enter)="openDetails(log)"
+                  >
+                    <td class="user-name">
+                      {{ log.analystFullName }}
+                    </td>
+
+                    <td>
+                      {{
+                        getRecordLabel(
+                          log.recordType
+                        )
+                      }}
+                    </td>
+
+                    <td class="date-cell">
+                      {{
+                        formatWorkDate(
+                          log.newWorkDate
+                        )
+                      }}
+                    </td>
+
+                    <td>
+                      {{ log.correctedByUserFullName }}
+                    </td>
+
+                    <td class="date-cell">
+                      {{
+                        formatDateTime(
+                          log.createdAt
+                        )
+                      }}
+                    </td>
+
+                    <td class="details-cell">
+                      Ver detalhes
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+    </section>
+  </main>
+
+  @if (selectedLog(); as log) {
+    <div class="modal-backdrop">
+      <section
+        class="log-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="log-modal-title"
+      >
+        <div class="modal-header">
+          <div>
+            <p class="section-label">
+              AUDITORIA DA CORREÇÃO
+            </p>
+
+            <h2 id="log-modal-title">
+              Detalhes da alteração
+            </h2>
+          </div>
+
+          <button
+            class="modal-close-button"
+            type="button"
+            aria-label="Fechar detalhes"
+            (click)="closeDetails()"
+          >
+            ×
+          </button>
+        </div>
+
+        <div class="detail-section">
+          <h3>
+            Analista
+          </h3>
+
+          <div class="detail-grid">
+            <div>
+              <span class="info-label">
+                Nome
+              </span>
+
+              <strong>
+                {{ log.analystFullName }}
+              </strong>
+            </div>
+
+            <div>
+              <span class="info-label">
+                E-mail
+              </span>
+
+              <span>
+                {{ log.analystEmail }}
+              </span>
+            </div>
+
+            <div>
+              <span class="info-label">
+                Marcação
+              </span>
+
+              <strong>
+                {{ getRecordLabel(log.recordType) }}
+              </strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>
+            Alteração realizada
+          </h3>
+
+          <div class="change-grid">
+            <div class="change-card">
+              <span class="change-title">
+                Antes
+              </span>
+
+              <span class="info-label">
+                Data da jornada
+              </span>
+
+              <strong>
+                {{
+                  formatWorkDate(
+                    log.previousWorkDate
+                  )
+                }}
+              </strong>
+
+              <span class="info-label">
+                Data e horário
+              </span>
+
+              <strong>
+                {{
+                  formatDateTime(
+                    log.previousRecordedAt
+                  )
+                }}
+              </strong>
+            </div>
+
+            <div class="change-card">
+              <span class="change-title">
+                Depois
+              </span>
+
+              <span class="info-label">
+                Data da jornada
+              </span>
+
+              <strong>
+                {{
+                  formatWorkDate(
+                    log.newWorkDate
+                  )
+                }}
+              </strong>
+
+              <span class="info-label">
+                Data e horário
+              </span>
+
+              <strong>
+                {{
+                  formatDateTime(
+                    log.newRecordedAt
+                  )
+                }}
+              </strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>
+            Responsável pela correção
+          </h3>
+
+          <div class="detail-grid">
+            <div>
+              <span class="info-label">
+                Administrador
+              </span>
+
+              <strong>
+                {{ log.correctedByUserFullName }}
+              </strong>
+            </div>
+
+            <div>
+              <span class="info-label">
+                E-mail
+              </span>
+
+              <span>
+                {{ log.correctedByUserEmail }}
+              </span>
+            </div>
+
+            <div>
+              <span class="info-label">
+                Data da correção
+              </span>
+
+              <span>
+                {{ formatDateTime(log.createdAt) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>
+            Motivo da correção
+          </h3>
+
+          <p class="reason-text">
+            {{ log.reason }}
+          </p>
+        </div>
+
+        <div class="modal-actions">
+          <button
+            class="close-details-button"
+            type="button"
+            (click)="closeDetails()"
+          >
+            Fechar
+          </button>
+        </div>
+      </section>
+    </div>
+  }
+</div>
