@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import {
+  AdminTimeRecordCorrectionResponse,
   AdminTimeRecordResponse,
   CorrectTimeRecordRequest,
   CreateTimeRecordRequest,
@@ -29,6 +30,12 @@ export class TimeRecordService {
   getAdminHistory(): Observable<AdminTimeRecordResponse[]> {
     return this.http.get<AdminTimeRecordResponse[]>(
       `${this.apiUrl}/admin`
+    );
+  }
+
+  getAdminCorrectionLogs(): Observable<AdminTimeRecordCorrectionResponse[]> {
+    return this.http.get<AdminTimeRecordCorrectionResponse[]>(
+      `${this.apiUrl}/admin/corrections`
     );
   }
 

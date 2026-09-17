@@ -28,3 +28,21 @@ export interface AdminTimeRecordResponse extends TimeRecordResponse {
   userFullName: string;
   userEmail: string;
 }
+
+export interface AdminTimeRecordCorrectionResponse {
+  id: string;
+  timeRecordId: string;
+  analystId: string;
+  analystFullName: string;
+  analystEmail: string;
+  recordType: TimeRecordType;
+  previousWorkDate: string;
+  newWorkDate: string;
+  previousRecordedAt: string;
+  newRecordedAt: string;
+  correctedByUserId: string;
+  correctedByUserFullName: string;
+  correctedByUserEmail: string;
+  reason: string;
+  createdAt: string;
+}
